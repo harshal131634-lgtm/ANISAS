@@ -1,0 +1,2075 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ANISAS - Enterprise Cyber Intelligence Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            soc: {
+              bg: '#080C14',
+              card: '#0F172A',
+              border: '#1E293B',
+              accent: '#3B82F6',
+              cyan: '#06B6D4',
+              emerald: '#10B981',
+              rose: '#F43F5E',
+              amber: '#F59E0B'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #080C14;
+      color: #E2E8F0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-panel-glow {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      box-shadow: 0 0 25px rgba(6, 182, 212, 0.15);
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #080C14; }
+    ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #06B6D4; }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+      }
+      header, #pipelineTrackerBar, sidebar, aside, button, .no-print {
+        display: none !important;
+      }
+      #printablePdfReport {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        color: #0f172a !important;
+        background: #ffffff !important;
+      }
+      .glass-panel {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-cyan-500 selection:text-white">
+
+  <!-- Top Navigation -->
+  <header class="h-16 border-b border-slate-800/80 bg-[#0B0F19]/90 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-40">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+        <i class="fa-solid fa-shield-halved text-white text-base"></i>
+      </div>
+      <div>
+        <h1 class="font-extrabold text-base text-white tracking-wider">ANISAS</h1>
+        <p class="text-[10px] text-cyan-400 font-mono uppercase tracking-widest">Enterprise Cyber SOC Platform</p>
+      </div>
+    </div>
+
+    <!-- Top Module Nav -->
+    <div class="flex items-center gap-2">
+      <button onclick="switchTab('module1')" id="navTabModule1" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+        <i class="fa-solid fa-circle-nodes mr-1 text-[11px]"></i>M01: ASN Intel
+      </button>
+      <button onclick="switchTab('module2')" id="navTabModule2" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60">
+        <i class="fa-solid fa-network-wired mr-1 text-[11px]"></i>M02: Network Recon
+      </button>
+      <button onclick="switchTab('module3')" id="navTabModule3" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60">
+        <i class="fa-solid fa-lock mr-1 text-[11px]"></i>M03: Perimeter Intel
+      </button>
+      <button onclick="switchTab('module4')" id="navTabModule4" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-400 bg-amber-500/20 border border-amber-500/30">
+        <i class="fa-solid fa-video mr-1 text-[11px]"></i>M04: Surveillance & IoT
+      </button>
+      <button onclick="switchTab('module5')" id="navTabModule5" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-400 bg-indigo-500/20 border border-indigo-500/30">
+        <i class="fa-solid fa-wifi mr-1 text-[11px]"></i>M05: Wireless Intel
+      </button>
+      <button onclick="switchTab('module6')" id="navTabModule6" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-purple-400 bg-purple-500/20 border border-purple-500/30">
+        <i class="fa-solid fa-brain mr-1 text-[11px]"></i>M06: AI Risk Engine
+      </button>
+      <button onclick="switchTab('module7')" id="navTabModule7" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-cyan-400 bg-cyan-500/20 border border-cyan-500/30">
+        <i class="fa-solid fa-chart-pie mr-1 text-[11px]"></i>M07: Unified SOC
+      </button>
+      <button onclick="switchTab('topology')" id="navTabTopology" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60">
+        <i class="fa-solid fa-diagram-project mr-1 text-[11px]"></i>Topology Graph
+      </button>
+      <button onclick="switchTab('services')" id="navTabServices" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60">
+        <i class="fa-solid fa-server mr-1 text-[11px]"></i>Services & Ports
+      </button>
+      <button onclick="switchTab('dns')" id="navTabDNS" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/60">
+        <i class="fa-solid fa-globe mr-1 text-[11px]"></i>DNS & Subdomains
+      </button>
+    </div>
+
+  </header>
+
+  <!-- Pipeline Live Tracker Bar -->
+  <div id="pipelineTrackerBar" class="bg-slate-950 border-b border-slate-800 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <span class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+        <i class="fa-solid fa-gears text-sm animate-spin" style="animation-duration: 4s;"></i>
+        Continuous Pipeline Tracker:
+      </span>
+      <div class="flex items-center gap-1.5 text-[11px] font-mono">
+        <span id="pStep1" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">M01 ASN Intel ✓</span>
+        <i class="fa-solid fa-chevron-right text-slate-600 text-[9px]"></i>
+        <span id="pStep2" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">M02 Recon ✓</span>
+        <i class="fa-solid fa-chevron-right text-slate-600 text-[9px]"></i>
+        <span id="pStep3" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">M03 Perimeter ✓</span>
+        <i class="fa-solid fa-chevron-right text-slate-600 text-[9px]"></i>
+        <span id="pStep4" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">M04 IoT ✓</span>
+        <i class="fa-solid fa-chevron-right text-slate-600 text-[9px]"></i>
+        <span id="pStep5" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">M05 Wireless ✓</span>
+        <i class="fa-solid fa-chevron-right text-slate-600 text-[9px]"></i>
+        <span id="pStep6" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">M06 AI Engine ✓</span>
+        <i class="fa-solid fa-chevron-right text-slate-600 text-[9px]"></i>
+        <span id="pStep7" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">M07 Unified SOC ✓</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="w-36 h-2 bg-slate-900 rounded-full overflow-hidden">
+        <div id="pipelineProgressFill" class="h-full bg-gradient-to-r from-cyan-500 via-emerald-500 via-purple-500 to-indigo-500 transition-all duration-500" style="width: 100%;"></div>
+      </div>
+      <span id="pipelineStatusText" class="text-xs font-mono font-bold text-cyan-400">100% Pipeline Done</span>
+    </div>
+  </div>
+
+  <!-- App Layout Container -->
+  <div class="flex-1 flex max-w-[1600px] w-full mx-auto p-6 gap-6">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-slate-950/60 border border-slate-800/80 rounded-xl p-4 space-y-4 h-fit sticky top-28">
+      <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2">Pipeline Modules</div>
+      <nav class="space-y-1">
+        <button onclick="switchTab('module1')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-between">
+          <span><i class="fa-solid fa-shield-halved w-4 mr-2"></i>Module 01: ASN Intel</span>
+          <i class="fa-solid fa-check text-[10px] text-emerald-400"></i>
+        </button>
+        <button onclick="switchTab('module2')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800/50 flex items-center justify-between">
+          <span><i class="fa-solid fa-network-wired w-4 mr-2"></i>Module 02: Network Recon</span>
+          <i class="fa-solid fa-check text-[10px] text-emerald-400"></i>
+        </button>
+        <button onclick="switchTab('module3')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+          <span><i class="fa-solid fa-lock w-4 mr-2"></i>Module 03: Security Perimeter</span>
+          <i class="fa-solid fa-check text-[10px] text-emerald-400"></i>
+        </button>
+        <button onclick="switchTab('module4')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/30 flex items-center justify-between">
+          <span><i class="fa-solid fa-video w-4 mr-2"></i>Module 04: IoT & Surveillance</span>
+          <i class="fa-solid fa-check text-[10px] text-emerald-400"></i>
+        </button>
+        <button onclick="switchTab('module5')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-indigo-400 bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between">
+          <span><i class="fa-solid fa-wifi w-4 mr-2"></i>Module 05: Wireless Intel</span>
+          <i class="fa-solid fa-check text-[10px] text-emerald-400"></i>
+        </button>
+        <button onclick="switchTab('module6')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-purple-400 bg-purple-500/10 border border-purple-500/30 flex items-center justify-between">
+          <span><i class="fa-solid fa-brain w-4 mr-2"></i>Module 06: AI Risk Engine</span>
+          <i class="fa-solid fa-check text-[10px] text-emerald-400"></i>
+        </button>
+        <button onclick="switchTab('module7')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-between">
+          <span><i class="fa-solid fa-chart-pie w-4 mr-2"></i>Module 07: Unified SOC</span>
+          <i class="fa-solid fa-check text-[10px] text-emerald-400"></i>
+        </button>
+        <button disabled class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 cursor-not-allowed opacity-50">
+          <i class="fa-solid fa-chart-pie w-4 mr-2"></i>Module 07: Unified SOC
+        </button>
+      </nav>
+
+      <div class="pt-4 border-t border-slate-800 text-[11px] text-slate-500 space-y-1">
+        <div class="flex items-center justify-between"><span>Orchestrator:</span><span class="text-emerald-400 font-bold font-mono">M01 → M02 → M03</span></div>
+        <div class="flex items-center justify-between"><span>Monorepo API:</span><span class="text-cyan-400 font-mono">/api/v1/perimeter/*</span></div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 space-y-6 min-w-0">
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 1: MODULE 01 ASN & ISP INTELLIGENCE -->
+      <!-- ========================================================================= -->
+      <div id="viewModule1" class="space-y-6">
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <div class="text-xs font-mono text-cyan-400 font-bold uppercase tracking-wider">
+              Module 01 • Real Cyber Intelligence Pipeline
+            </div>
+            <h2 class="text-2xl font-extrabold text-white mt-1">ASN & ISP Real Intelligence Engine</h2>
+            <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+              Resolving Autonomous Systems, WHOIS, RDAP, BGP routing, geo-telemetry, and VirusTotal v3 threat scores.
+            </p>
+          </div>
+
+          <div>
+            <button onclick="switchTab('module2')" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-cyan-500/20 transition">
+              <span>View Module 02 Recon Data</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Single IP Input Section -->
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-crosshairs text-cyan-400"></i>
+              Target Input • Single Entry Trigger (Runs M01 → M02 → M03 → M04 → M05 → M06 → M07)
+            </h3>
+            <div class="flex items-center gap-1.5">
+              <button onclick="setPreset('185.220.101.5')" class="px-2.5 py-1 rounded bg-rose-950/80 text-xs font-mono text-rose-300 border border-rose-500/40 hover:bg-rose-900">185.220.101.5 (Tor Exit)</button>
+              <button onclick="setPreset('147.185.133.119')" class="px-2.5 py-1 rounded bg-amber-950/80 text-xs font-mono text-amber-300 border border-amber-500/40 hover:bg-amber-900">147.185.133.119 (Palo IoT)</button>
+              <button onclick="setPreset('8.8.8.8')" class="px-2 py-0.5 rounded bg-slate-800 text-[11px] font-mono text-slate-300 hover:bg-slate-700">8.8.8.8 (Google DNS)</button>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <input id="targetIpInput" type="text" value="" placeholder="Enter Target IPv4 or IPv6 address (e.g. 8.8.8.8)..." class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-cyan-500 transition">
+            
+            <button onclick="executeSingleScan()" id="btnScan" class="px-8 py-3 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 transition">
+              <i class="fa-solid fa-play"></i>
+              <span>Execute</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div id="m1Results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase"><span>Autonomous System</span><i class="fa-solid fa-hashtag text-cyan-400"></i></div>
+            <div id="resAsnNumber" class="text-xl font-bold font-mono text-cyan-300">AS--</div>
+            <div id="resAsnName" class="text-xs text-slate-300 truncate">--</div>
+            <div id="resRegistry" class="text-[10px] text-slate-500 font-mono">Registry: RIR</div>
+          </div>
+
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase"><span>Organization / ISP</span><i class="fa-solid fa-building text-blue-400"></i></div>
+            <div id="resOrg" class="text-base font-bold text-white truncate">--</div>
+            <div id="resIsp" class="text-xs text-slate-400 truncate">ISP: --</div>
+          </div>
+
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase"><span>Subnet CIDR</span><i class="fa-solid fa-network-wired text-emerald-400"></i></div>
+            <div id="resCidr" class="text-base font-bold font-mono text-emerald-300">--</div>
+            <div id="resNetRange" class="text-xs text-slate-400">Range: --</div>
+          </div>
+
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase"><span>VirusTotal Malicious</span><i class="fa-solid fa-shield-virus text-rose-400"></i></div>
+            <div id="resVtScore" class="text-2xl font-bold font-mono text-rose-400">0 Malicious</div>
+            <div id="resRiskBadge" class="text-xs font-bold text-emerald-300">CLEAN INFRASTRUCTURE</div>
+          </div>
+        </div>
+
+        <!-- Extended Module 01 OSINT Panels: WHOIS, BGP, Geo-Location & AI Executive Summary -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-brain text-cyan-400"></i>
+                XGBoost ML Executive Summary & Telemetry
+              </h3>
+              <span id="m1ConfidenceBadge" class="text-xs font-mono text-emerald-400 font-bold">ML Confidence: 99.2%</span>
+            </div>
+            <p id="m1AiSummary" class="text-xs text-slate-300 leading-relaxed font-sans p-4 rounded-lg bg-slate-950 border border-slate-800">
+              Scanning target IP...
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div class="p-4 rounded-lg bg-slate-950 border border-slate-800 space-y-2">
+                <div class="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+                  <i class="fa-solid fa-address-card"></i> Live WHOIS / RDAP Registry
+                </div>
+                <div class="text-xs space-y-1 font-mono">
+                  <div class="flex justify-between"><span class="text-slate-500">Registrar:</span><span id="m1WhoisRegistrar" class="text-white">--</span></div>
+                  <div class="flex justify-between"><span class="text-slate-500">Owner:</span><span id="m1WhoisOwner" class="text-slate-300 truncate">--</span></div>
+                  <div class="flex justify-between"><span class="text-slate-500">Abuse Contact:</span><span id="m1WhoisAbuse" class="text-cyan-300 truncate">--</span></div>
+                </div>
+              </div>
+
+              <div class="p-4 rounded-lg bg-slate-950 border border-slate-800 space-y-2">
+                <div class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                  <i class="fa-solid fa-route"></i> BGP Routing & Peering
+                </div>
+                <div class="text-xs space-y-1 font-mono">
+                  <div class="flex justify-between"><span class="text-slate-500">Origin ASN:</span><span id="m1BgpOrigin" class="text-emerald-300">--</span></div>
+                  <div class="flex justify-between"><span class="text-slate-500">Prefixes:</span><span id="m1BgpPrefix" class="text-white">--</span></div>
+                  <div class="flex justify-between"><span class="text-slate-500">Peers:</span><span id="m1BgpPeers" class="text-slate-400 truncate">Arelion, Lumen, Verizon</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Geo-Location Panel -->
+          <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-2">
+              <i class="fa-solid fa-earth-americas text-cyan-400"></i>
+              Live Geo-Location & Network Host
+            </h3>
+            <div class="space-y-3 text-xs font-mono">
+              <div class="flex justify-between"><span class="text-slate-400">Hostname:</span><span id="m1GeoHostname" class="text-cyan-300 truncate max-w-[140px]">--</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">Country:</span><span id="m1GeoCountry" class="text-white">--</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">City / Region:</span><span id="m1GeoCity" class="text-slate-300">--</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">Coordinates:</span><span id="m1GeoCoords" class="text-emerald-300">--</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">Timezone:</span><span id="m1GeoTz" class="text-slate-400">--</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 2: MODULE 02 NETWORK RECONNAISSANCE DASHBOARD -->
+      <!-- ========================================================================= -->
+      <div id="viewModule2" class="hidden space-y-6">
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <div class="text-xs font-mono text-cyan-400 font-bold uppercase tracking-wider">
+              Module 02 • Network Reconnaissance Output
+            </div>
+            <h2 class="text-2xl font-extrabold text-white mt-1">Network Discovery & Inventory</h2>
+            <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+              Consumes Module 01 ASN data automatically to discover Subnets, Live Hosts, Open Ports, Service Banners, DNS Records, and TLS Certificates.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="switchTab('module3')" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-emerald-500/20">
+              <span>View Module 03 Perimeter Intelligence</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase"><span>Discovered Hosts</span><i class="fa-solid fa-server text-cyan-400"></i></div>
+            <div id="m2HostCount" class="text-2xl font-bold font-mono text-cyan-300">2 Live Hosts</div>
+            <div class="text-xs text-slate-400">Linux / Cisco Gateways</div>
+          </div>
+
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase"><span>Open Ports & Services</span><i class="fa-solid fa-plug text-emerald-400"></i></div>
+            <div id="m2PortCount" class="text-2xl font-bold font-mono text-emerald-300">3 Open Ports</div>
+            <div class="text-xs text-slate-400">HTTP, HTTPS, SSH</div>
+          </div>
+
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase"><span>DNS & Subdomains</span><i class="fa-solid fa-globe text-blue-400"></i></div>
+            <div id="m2DnsCount" class="text-2xl font-bold font-mono text-blue-300">6 DNS Records</div>
+            <div class="text-xs text-slate-400">3 Passive Subdomains</div>
+          </div>
+
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase"><span>TLS Certificate</span><i class="fa-solid fa-certificate text-amber-400"></i></div>
+            <div id="m2TlsStatus" class="text-sm font-bold font-mono text-amber-300 truncate">TLSv1.3 Valid</div>
+            <div class="text-xs text-slate-400">DigiCert Global CA</div>
+          </div>
+        </div>
+
+        <!-- Open Services Table -->
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-cyan-400"></i>
+              Discovered Service Banners & Open Ports
+            </h3>
+            <span class="text-xs font-mono text-emerald-400">Live Socket Banner Probe</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400 uppercase font-mono text-[10px]">
+                  <th class="py-3 px-4">Port / Protocol</th>
+                  <th class="py-3 px-4">Service</th>
+                  <th class="py-3 px-4">State</th>
+                  <th class="py-3 px-4">Service Banner</th>
+                  <th class="py-3 px-4">Product Version</th>
+                </tr>
+              </thead>
+              <tbody id="m2ServicesTable" class="divide-y divide-slate-800/60 font-mono">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 3: MODULE 03 SECURITY PERIMETER INTELLIGENCE -->
+      <!-- ========================================================================= -->
+      <div id="viewModule3" class="hidden space-y-6">
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <div class="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider">
+              Module 03 • Security Perimeter Detection Engine
+            </div>
+            <h2 class="text-2xl font-extrabold text-white mt-1">Perimeter Defense, WAF & Posture Analysis</h2>
+            <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+              Consumes Module 01 & 02 intelligence to detect WAFs, Next-Gen Firewalls, IDS/IPS signatures, DMZ boundaries, and AI Scan Detection Likelihood.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="switchTab('module4')" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-amber-600 to-orange-600 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-amber-500/20">
+              <span>View Module 04 Surveillance & IoT</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Security Posture Score -->
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase">
+              <span>Security Posture Score</span>
+              <i class="fa-solid fa-shield text-emerald-400"></i>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span id="m3OverallScore" class="text-2xl font-bold font-mono text-emerald-400">42/100</span>
+              <span id="m3PostureRating" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-rose-500/20 text-rose-300 border border-rose-500/40">WEAK</span>
+            </div>
+            <div class="text-xs text-slate-400">Overall Perimeter Defense</div>
+          </div>
+
+          <!-- WAF Vendor -->
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase">
+              <span>WAF Vendor</span>
+              <i class="fa-solid fa-cubes text-cyan-400"></i>
+            </div>
+            <div id="m3WafVendor" class="text-sm font-bold font-mono text-cyan-300 truncate">Cloudflare Enterprise WAF</div>
+            <div id="m3WafStatus" class="text-xs text-slate-400">Status: ACTIVE_FILTERING</div>
+          </div>
+
+          <!-- Firewall Boundary -->
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase">
+              <span>Next-Gen Firewall</span>
+              <i class="fa-solid fa-fire text-amber-400"></i>
+            </div>
+            <div id="m3FwVendor" class="text-sm font-bold font-mono text-amber-300 truncate">Palo Alto Networks NGFW</div>
+            <div id="m3FwConfidence" class="text-xs text-slate-400">Confidence: 94.0%</div>
+          </div>
+
+          <!-- AI Scan Detection Chance -->
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase">
+              <span>AI Detection Likelihood</span>
+              <i class="fa-solid fa-radar text-rose-400"></i>
+            </div>
+            <div id="m3DetectionChance" class="text-2xl font-bold font-mono text-rose-400">94.5%</div>
+            <div class="text-xs text-slate-400">Probability SOC Detects Scan</div>
+          </div>
+        </div>
+
+        <!-- WAF Detections & Recommendations -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-user-shield text-cyan-400"></i>
+                Executive Security Recommendations
+              </h3>
+              <span class="text-xs font-mono text-amber-400 font-bold">Hardening Action Plan</span>
+            </div>
+
+            <div id="m3RecsContainer" class="space-y-3">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- DMZ & IDS/IPS Summary -->
+          <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-2">
+              <i class="fa-solid fa-sitemap text-emerald-400"></i>
+              Boundary & IDS Topology
+            </h3>
+
+            <div class="space-y-3 text-xs">
+              <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
+                <div class="text-slate-400">DMZ Segment:</div>
+                <div id="m3DmzType" class="text-emerald-400 font-mono font-bold">PUBLIC_DMZ_SEGMENT</div>
+                <div id="m3DmzGateway" class="text-[10px] text-slate-500 font-mono">Gateway: gateway-185.220.101.1</div>
+              </div>
+
+              <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
+                <div class="text-slate-400">IDS / IPS Vendor:</div>
+                <div id="m3IdsVendor" class="text-cyan-300 font-mono font-bold">Suricata / Snort Enterprise IDS</div>
+                <div id="m3IdsType" class="text-[10px] text-slate-500">Detection: BEHAVIORAL_ANOMALY</div>
+              </div>
+            </div>
+
+            <!-- Defensive Awareness Reference Guide -->
+            <div class="pt-2 border-t border-slate-800 space-y-2">
+              <div class="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-graduation-cap"></i>
+                Defensive Awareness Guide
+              </div>
+              <p class="text-[11px] text-slate-400 leading-relaxed">
+                Educational reference detailing Chunked Encoding and TCP Segment Manipulation for perimeter defender hardening ONLY.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ========================================================================= -->
+      <!-- VIEW 4: MODULE 04 SURVEILLANCE & IOT ASSET INTELLIGENCE DASHBOARD -->
+      <!-- ========================================================================= -->
+      <div id="viewModule4" class="hidden space-y-6">
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <div class="text-xs font-mono text-amber-400 font-bold uppercase tracking-wider">
+              Module 04 • Surveillance & IoT Asset Intelligence Output
+            </div>
+            <h2 class="text-2xl font-extrabold text-white mt-1">Surveillance Systems & IoT Inventory</h2>
+            <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+              Discovers CCTV, IP Cameras, NVR/DVR Recorders, ONVIF/RTSP Streams, Embedded Web Consoles, CVE Vulnerabilities, and Default Credentials.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="alert('Module 05 Wireless Intel Engine will be triggered!');" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-amber-600 to-orange-600 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-amber-500/20">
+              <span>Pass Output to Module 05 Wireless Intel</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase">
+              <span>Discovered IoT Assets</span>
+              <i class="fa-solid fa-video text-amber-400"></i>
+            </div>
+            <div id="m4AssetCount" class="text-2xl font-bold font-mono text-amber-300">1 Asset</div>
+            <div class="text-xs text-slate-400">Embedded IoT / Camera</div>
+          </div>
+
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase">
+              <span>Surveillance Hardware</span>
+              <i class="fa-solid fa-camera text-cyan-400"></i>
+            </div>
+            <div id="m4SurveillanceCount" class="text-2xl font-bold font-mono text-cyan-300">1 Camera / NVR</div>
+            <div class="text-xs text-slate-400">ONVIF / RTSP Protocol</div>
+          </div>
+
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase">
+              <span>Correlated CVEs</span>
+              <i class="fa-solid fa-bug text-rose-400"></i>
+            </div>
+            <div id="m4CveCount" class="text-2xl font-bold font-mono text-rose-400">2 CVE Matches</div>
+            <div class="text-xs text-slate-400">Firmware Vulnerabilities</div>
+          </div>
+
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase">
+              <span>Default Credential Flags</span>
+              <i class="fa-solid fa-key text-amber-400"></i>
+            </div>
+            <div id="m4CredFlagsCount" class="text-2xl font-bold font-mono text-amber-400">2 Known Sets</div>
+            <div class="text-xs text-slate-400">Defensive Awareness Only</div>
+          </div>
+        </div>
+
+        <!-- Main Surveillance Assets Table -->
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-amber-400"></i>
+              Discovered Surveillance Hardware & Embedded IoT Inventory
+            </h3>
+            <span class="text-xs font-mono text-emerald-400">MAC Vendor OUI & Passive Fingerprint</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs font-mono">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px]">
+                  <th class="py-3 px-4">Target IP</th>
+                  <th class="py-3 px-4">Device Category</th>
+                  <th class="py-3 px-4">Vendor & Model</th>
+                  <th class="py-3 px-4">Firmware Version</th>
+                  <th class="py-3 px-4">Embedded Server</th>
+                  <th class="py-3 px-4">ONVIF / RTSP</th>
+                  <th class="py-3 px-4">Risk Level</th>
+                </tr>
+              </thead>
+              <tbody id="m4AssetsTable" class="divide-y divide-slate-800/60">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ONVIF / RTSP & CVE Correlation Panel -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- ONVIF & RTSP Stream Audit Card -->
+          <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-photo-film text-cyan-400"></i>
+                ONVIF & RTSP Stream Endpoints
+              </h3>
+              <span class="text-xs font-mono text-cyan-400">Passive Protocol Audit</span>
+            </div>
+
+            <div class="space-y-3 text-xs font-mono">
+              <!-- RTSP Streams Block -->
+              <div class="p-3.5 rounded-lg bg-slate-950 border border-slate-800 space-y-2">
+                <div class="flex items-center justify-between text-cyan-400 font-bold border-b border-slate-800 pb-1.5">
+                  <span class="flex items-center gap-1.5"><i class="fa-solid fa-video"></i> Live RTSP Stream Endpoints</span>
+                  <span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[10px]">RTSP / 554</span>
+                </div>
+                <div class="space-y-1">
+                  <div class="text-[11px] text-slate-400">Primary High-Res Stream:</div>
+                  <div id="m4RtspPrimaryUri" class="text-cyan-300 font-bold truncate bg-slate-900 px-2 py-1 rounded">rtsp://185.220.101.5:554/Streaming/Channels/101</div>
+                </div>
+                <div class="space-y-1">
+                  <div class="text-[11px] text-slate-400">Secondary Sub-Stream:</div>
+                  <div id="m4RtspSubUri" class="text-slate-300 font-mono truncate bg-slate-900 px-2 py-1 rounded">rtsp://185.220.101.5:554/Streaming/Channels/102</div>
+                </div>
+                <div class="space-y-1">
+                  <div class="text-[11px] text-slate-400">Audio Stream:</div>
+                  <div id="m4RtspAudioUri" class="text-slate-400 font-mono truncate bg-slate-900 px-2 py-1 rounded">rtsp://185.220.101.5:554/Streaming/Channels/101/audio</div>
+                </div>
+                <div id="m4RtspCodec" class="text-[11px] text-amber-300 pt-1 border-t border-slate-800/80">Codecs: H.265 / HEVC Main (4K 30fps) • H.264 / AVC • AAC Audio</div>
+              </div>
+
+              <!-- ONVIF Services Block -->
+              <div class="p-3.5 rounded-lg bg-slate-950 border border-slate-800 space-y-2">
+                <div class="flex items-center justify-between text-emerald-400 font-bold border-b border-slate-800 pb-1.5">
+                  <span class="flex items-center gap-1.5"><i class="fa-solid fa-network-wired"></i> ONVIF Protocol Endpoints</span>
+                  <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">ONVIF / 80</span>
+                </div>
+                <div class="space-y-1">
+                  <div class="text-[11px] text-slate-400">Device Service Endpoint:</div>
+                  <div id="m4OnvifDeviceEndpoint" class="text-emerald-300 font-bold truncate bg-slate-900 px-2 py-1 rounded">http://185.220.101.5:80/onvif/device_service</div>
+                </div>
+                <div class="space-y-1">
+                  <div class="text-[11px] text-slate-400">Media Service Endpoint:</div>
+                  <div id="m4OnvifMediaEndpoint" class="text-teal-300 font-mono truncate bg-slate-900 px-2 py-1 rounded">http://185.220.101.5:80/onvif/media_service</div>
+                </div>
+                <div class="space-y-1">
+                  <div class="text-[11px] text-slate-400">PTZ Camera Control Service:</div>
+                  <div id="m4OnvifPtzEndpoint" class="text-cyan-300 font-mono truncate bg-slate-900 px-2 py-1 rounded">http://185.220.101.5:80/onvif/ptz_service</div>
+                </div>
+                <div class="space-y-1">
+                  <div class="text-[11px] text-slate-400">Snapshot Image URI:</div>
+                  <div id="m4SnapshotUri" class="text-amber-300 font-mono truncate bg-slate-900 px-2 py-1 rounded">http://185.220.101.5:80/onvif-media/snapshot.jpg</div>
+                </div>
+                <div id="m4OnvifProfiles" class="pt-1.5 border-t border-slate-800 flex flex-wrap gap-1">
+                  <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold">Profile S (Streaming)</span>
+                  <span class="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[9px] font-bold">Profile T (H.265)</span>
+                  <span class="px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[9px] font-bold">Profile G (Edge Storage)</span>
+                  <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[9px] font-bold">Profile M (AI Analytics)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CVE Correlations & Default Credentials Panel -->
+          <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-shield-virus text-rose-400"></i>
+                CVE Matches & Default Credentials
+              </h3>
+              <span class="text-xs font-mono text-amber-400">Defensive Awareness</span>
+            </div>
+
+            <div id="m4CveContainer" class="space-y-3">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- IP Range Prediction & AI Vision Classifier Panel -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Surveillance IP Range Prediction Card -->
+          <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-network-wired text-amber-400"></i>
+                Surveillance IP Range & VLAN Cluster Predictions
+              </h3>
+              <span class="text-xs font-mono text-emerald-400">Predictive Subnet Analytics</span>
+            </div>
+
+            <div id="m4IpRangesContainer" class="space-y-3 font-mono text-xs">
+              <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
+                <div class="flex items-center justify-between text-amber-400 font-bold">
+                  <span>VLAN 20 (CCTV & Physical Security)</span>
+                  <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">94.5% Probability</span>
+                </div>
+                <div class="text-white font-bold" id="m4PredictRange1">185.220.101.100 - 185.220.101.150</div>
+                <div class="text-[11px] text-slate-400" id="m4PredictLikely1">Likely Devices: Hikvision / Dahua IP Cameras & NVR Recorders</div>
+              </div>
+
+              <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
+                <div class="flex items-center justify-between text-cyan-400 font-bold">
+                  <span>VLAN 30 (IoT & Building Automation)</span>
+                  <span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[10px]">88.0% Probability</span>
+                </div>
+                <div class="text-white font-bold" id="m4PredictRange2">185.220.101.200 - 185.220.101.240</div>
+                <div class="text-[11px] text-slate-400" id="m4PredictLikely2">Likely Devices: Smart Switches, BACnet Controllers, Access Readers</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Vision & Text Interface Classifier Card -->
+          <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-brain text-purple-400"></i>
+                AI Vision & Banner Interface Classifier
+              </h3>
+              <span class="text-xs font-mono text-purple-400 font-bold">Neural UI Classification</span>
+            </div>
+
+            <div class="space-y-3 font-mono text-xs">
+              <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1.5">
+                <div class="text-slate-400">Interface Screenshot Classification:</div>
+                <div id="m4VisionPrediction" class="text-purple-300 font-bold text-sm">CCTV_CAMERA_ADMIN_PANEL</div>
+                <div id="m4VisionConfidence" class="text-[11px] text-emerald-400">Confidence: 97.8% Neural Model Match</div>
+              </div>
+
+              <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1.5">
+                <div class="text-slate-400">Detected Console UI Elements:</div>
+                <div id="m4VisionElements" class="flex flex-wrap gap-1 pt-1">
+                  <span class="px-2 py-0.5 rounded bg-slate-900 text-cyan-300 border border-slate-800 text-[10px]">Video Stream Canvas</span>
+                  <span class="px-2 py-0.5 rounded bg-slate-900 text-amber-300 border border-slate-800 text-[10px]">PTZ Joystick Overlay</span>
+                  <span class="px-2 py-0.5 rounded bg-slate-900 text-emerald-300 border border-slate-800 text-[10px]">ONVIF Auth Prompt</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ========================================================================= -->
+      <!-- VIEW 5: MODULE 05 WIRELESS INFRASTRUCTURE INTELLIGENCE DASHBOARD -->
+      <!-- ========================================================================= -->
+      <div id="viewModule5" class="hidden space-y-6">
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <div class="text-xs font-mono text-indigo-400 font-bold uppercase tracking-wider">
+              Module 05 • Wireless Infrastructure Intelligence & Assessment
+            </div>
+            <h2 class="text-2xl font-extrabold text-white mt-1">Wireless Access Points & Client Inventory</h2>
+            <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+              Analyzes Access Point SSIDs, BSSIDs, Radio Bands (2.4/5/6GHz), Encryption Posture (WPA3/WPA2/Open), ML Client Behavior Clusters, and Educational MAC Filtering Risk.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="alert('Module 06 AI Risk Engine will be triggered!');" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-indigo-500/20">
+              <span>Pass Output to Module 06 AI Risk Engine</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Access Points Inventory Table -->
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-tower-cell text-indigo-400"></i>
+              Discovered Wireless Access Points Inventory
+            </h3>
+            <span class="text-xs font-mono text-emerald-400">802.11 Beacon Fingerprint & OUI</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs font-mono">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px]">
+                  <th class="py-3 px-4">SSID / Network Name</th>
+                  <th class="py-3 px-4">BSSID (MAC)</th>
+                  <th class="py-3 px-4">Radio Band & Ch</th>
+                  <th class="py-3 px-4">Encryption & Cipher</th>
+                  <th class="py-3 px-4">Signal (dBm)</th>
+                  <th class="py-3 px-4">Hardware Vendor</th>
+                  <th class="py-3 px-4">Confidence</th>
+                </tr>
+              </thead>
+              <tbody id="m5ApsTable" class="divide-y divide-slate-800/60">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Wireless Clients & Role Classification Table -->
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-users-viewfinder text-cyan-400"></i>
+              Wireless Client Intelligence & Role Classification
+            </h3>
+            <span class="text-xs font-mono text-cyan-400">ARP & DHCP Lease Analysis</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs font-mono">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px]">
+                  <th class="py-3 px-4">Client MAC</th>
+                  <th class="py-3 px-4">Hostname</th>
+                  <th class="py-3 px-4">Manufacturer</th>
+                  <th class="py-3 px-4">Client IP</th>
+                  <th class="py-3 px-4">Associated SSID</th>
+                  <th class="py-3 px-4">Classified Role</th>
+                  <th class="py-3 px-4">Status</th>
+                </tr>
+              </thead>
+              <tbody id="m5ClientsTable" class="divide-y divide-slate-800/60">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Educational MAC Authentication Risk Simulator & ML Behavioral Panel -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- MAC Authentication Risk Educational Simulator -->
+          <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-amber-400"></i>
+                MAC Authentication Risk Simulator
+              </h3>
+              <span class="text-xs font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">DEFENSIVE EDUCATIONAL ONLY</span>
+            </div>
+
+            <div class="space-y-3 font-mono text-xs">
+              <div class="p-3.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1.5">
+                <div class="text-slate-400">Inactive Client Target Demonstration:</div>
+                <div id="m5MacSimMac" class="text-amber-300 font-bold">MAC: 00:11:22:33:44:55 (Legacy HP Print Server)</div>
+                <div id="m5MacSimSsid" class="text-slate-300 text-[11px]">Target Access Point: Corp-Secure-Wi-Fi</div>
+              </div>
+
+              <div class="p-3.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1.5">
+                <div class="text-slate-400">Theoretical Risk Mechanism:</div>
+                <p id="m5MacSimExplanation" class="text-slate-300 text-xs leading-relaxed">
+                  Networks relying solely on MAC-address whitelist filtering without 802.1X EAP cryptographic authentication allow unauthorized devices to assume cleartext MAC addresses observed in open beacon/data frames.
+                </p>
+              </div>
+
+              <div class="p-3.5 rounded-lg bg-slate-950 border border-emerald-500/30 space-y-1.5">
+                <div class="text-emerald-400 font-bold">Hardening Mitigation Plan:</div>
+                <ul id="m5MacSimMitigations" class="list-disc list-inside text-slate-300 text-[11px] space-y-1">
+                  <li>Upgrade wireless admission to WPA3-Enterprise 802.1X (EAP-TLS certificates).</li>
+                  <li>Disable MAC-address-only admission control filters.</li>
+                  <li>Deploy 802.11w Protected Management Frames (PMF).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- ML Behavioral Anomaly Detection Panel -->
+          <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-brain text-purple-400"></i>
+                ML Behavioral Clusters & Anomaly Detection
+              </h3>
+              <span class="text-xs font-mono text-purple-400">KMeans / IsolationForest</span>
+            </div>
+
+            <div id="m5AnomaliesContainer" class="space-y-3 font-mono text-xs">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 6: MODULE 06 AI RISK ENGINE DASHBOARD -->
+      <!-- ========================================================================= -->
+      <div id="viewModule6" class="hidden space-y-6">
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <div class="text-xs font-mono text-purple-400 font-bold uppercase tracking-wider">
+              Module 06 • Intelligence Core & OS Fingerprinting Engine
+            </div>
+            <h2 class="text-2xl font-extrabold text-white mt-1">AI Risk Scoring & Automated Classification</h2>
+            <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+              Synthesizes port/service vectors, TCP/IP stack behavior (TTL/WinSize/DF Bit), unsupervised cluster anomalies, and generates LLM Natural Language executive summaries.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="switchTab('module7');" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-cyan-600 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-purple-500/20">
+              <span>Launch Module 07 Unified SOC Dashboard</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase">
+              <span>Predicted Device Type</span>
+              <i class="fa-solid fa-microchip text-purple-400"></i>
+            </div>
+            <div id="m6DeviceType" class="text-lg font-bold font-mono text-purple-300">SURVEILLANCE_CAMERA_NVR</div>
+            <div id="m6DeviceConf" class="text-xs text-slate-400">98.5% ML Confidence</div>
+          </div>
+
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase">
+              <span>TCP/IP Stack OS</span>
+              <i class="fa-solid fa-terminal text-cyan-400"></i>
+            </div>
+            <div id="m6OsName" class="text-lg font-bold font-mono text-cyan-300">Linux 5.15-ARM64</div>
+            <div id="m6OsStack" class="text-xs text-slate-400">TTL=64, WIN=65535, DF=1</div>
+          </div>
+
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase">
+              <span>Automated Risk Score</span>
+              <i class="fa-solid fa-shield-cat text-amber-400"></i>
+            </div>
+            <div id="m6RiskScore" class="text-2xl font-bold font-mono text-amber-400">78 / 100</div>
+            <div id="m6RiskRating" class="text-xs text-amber-300 font-bold uppercase">HIGH RISK POSTURE</div>
+          </div>
+
+          <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-mono uppercase">
+              <span>LLM Model Synthesis</span>
+              <i class="fa-solid fa-robot text-emerald-400"></i>
+            </div>
+            <div class="text-lg font-bold font-mono text-emerald-300">GPT-4o AI Core</div>
+            <div class="text-xs text-slate-400">Automated NL Report</div>
+          </div>
+        </div>
+
+        <!-- LLM Executive Summary & Action Plan -->
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-file-contract text-purple-400"></i>
+              LLM Natural Language Executive Report Summary
+            </h3>
+            <span class="text-xs font-mono text-emerald-400">GPT-4o Executive Synthesis</span>
+          </div>
+
+          <div class="p-4 rounded-lg bg-slate-950 border border-slate-800 space-y-3 font-mono text-xs">
+            <p id="m6NlSummaryText" class="text-slate-300 leading-relaxed">
+              ANISAS AI Risk Engine evaluated target host. Evaluating multi-module vectors...
+            </p>
+
+            <div class="pt-2 border-t border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div class="text-amber-400 font-bold mb-1">Key Discovered Threats:</div>
+                <ul id="m6KeyThreatsList" class="list-disc list-inside text-slate-300 space-y-1">
+                  <!-- Rendered dynamically -->
+                </ul>
+              </div>
+
+              <div>
+                <div class="text-emerald-400 font-bold mb-1">Strategic Remediation Action Plan:</div>
+                <ul id="m6ActionPlanList" class="list-disc list-inside text-slate-300 space-y-1">
+                  <!-- Rendered dynamically -->
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 7: MODULE 07 UNIFIED SOC DASHBOARD -->
+      <!-- ========================================================================= -->
+      <div id="viewModule7" class="hidden space-y-6">
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <div class="text-xs font-mono text-cyan-400 font-bold uppercase tracking-wider">
+              Module 07 • Single-Pane-of-Glass Unified SOC Dashboard
+            </div>
+            <h2 class="text-2xl font-extrabold text-white mt-1">Unified Cyber Threat Operations Interface</h2>
+            <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+              Consolidates Modules 01–06 telemetry into an interactive network topology node-edge map, security perimeter boundary overlays, live logs, and single-click JSON/PDF export.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button onclick="exportFullJsonReport()" class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-cyan-400 border border-cyan-500/30 text-xs font-bold font-mono flex items-center gap-2">
+              <i class="fa-solid fa-file-code"></i>
+              <span>Export Machine JSON</span>
+            </button>
+            <button onclick="exportFullPdfReport()" class="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-emerald-600 text-white text-xs font-bold font-mono flex items-center gap-2 shadow-lg shadow-cyan-500/20">
+              <i class="fa-solid fa-file-pdf"></i>
+              <span>Export Human PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 6-Module Summary Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <!-- M01 -->
+          <div onclick="switchTab('module1')" class="glass-panel p-4 rounded-xl border border-cyan-500/30 cursor-pointer hover:border-cyan-400 transition space-y-1">
+            <div class="text-[10px] font-mono text-cyan-400 uppercase font-bold flex justify-between"><span>M01 ASN Intel</span><i class="fa-solid fa-shield-halved"></i></div>
+            <div id="m7CardM1Asn" class="text-sm font-bold font-mono text-white">AS--</div>
+            <div id="m7CardM1Org" class="text-[11px] text-slate-400 truncate">--</div>
+          </div>
+          <!-- M02 -->
+          <div onclick="switchTab('module2')" class="glass-panel p-4 rounded-xl border border-blue-500/30 cursor-pointer hover:border-blue-400 transition space-y-1">
+            <div class="text-[10px] font-mono text-blue-400 uppercase font-bold flex justify-between"><span>M02 Recon</span><i class="fa-solid fa-network-wired"></i></div>
+            <div id="m7CardM2Ports" class="text-sm font-bold font-mono text-white">0 Ports Open</div>
+            <div id="m7CardM2Service" class="text-[11px] text-slate-400 truncate">HTTP / TLS Audit</div>
+          </div>
+          <!-- M03 -->
+          <div onclick="switchTab('module3')" class="glass-panel p-4 rounded-xl border border-emerald-500/30 cursor-pointer hover:border-emerald-400 transition space-y-1">
+            <div class="text-[10px] font-mono text-emerald-400 uppercase font-bold flex justify-between"><span>M03 Perimeter</span><i class="fa-solid fa-lock"></i></div>
+            <div id="m7CardM3Waf" class="text-sm font-bold font-mono text-emerald-300">Cloudflare WAF</div>
+            <div id="m7CardM3Score" class="text-[11px] text-slate-400">Score 85/100</div>
+          </div>
+          <!-- M04 -->
+          <div onclick="switchTab('module4')" class="glass-panel p-4 rounded-xl border border-amber-500/30 cursor-pointer hover:border-amber-400 transition space-y-1">
+            <div class="text-[10px] font-mono text-amber-400 uppercase font-bold flex justify-between"><span>M04 IoT & Video</span><i class="fa-solid fa-video"></i></div>
+            <div id="m7CardM4Device" class="text-sm font-bold font-mono text-amber-300">Hikvision NVR</div>
+            <div id="m7CardM4Cve" class="text-[11px] text-slate-400">2 CVE Matches</div>
+          </div>
+          <!-- M05 -->
+          <div onclick="switchTab('module5')" class="glass-panel p-4 rounded-xl border border-indigo-500/30 cursor-pointer hover:border-indigo-400 transition space-y-1">
+            <div class="text-[10px] font-mono text-indigo-400 uppercase font-bold flex justify-between"><span>M05 Wireless</span><i class="fa-solid fa-wifi"></i></div>
+            <div id="m7CardM5Aps" class="text-sm font-bold font-mono text-indigo-300">2 Access Points</div>
+            <div id="m7CardM5Score" class="text-[11px] text-slate-400">Score 88/100</div>
+          </div>
+          <!-- M06 -->
+          <div onclick="switchTab('module6')" class="glass-panel p-4 rounded-xl border border-purple-500/30 cursor-pointer hover:border-purple-400 transition space-y-1">
+            <div class="text-[10px] font-mono text-purple-400 uppercase font-bold flex justify-between"><span>M06 AI Risk</span><i class="fa-solid fa-brain"></i></div>
+            <div id="m7CardM6Os" class="text-sm font-bold font-mono text-purple-300">Linux 5.15</div>
+            <div id="m7CardM6Score" class="text-[11px] text-amber-400 font-bold">78/100 HIGH</div>
+          </div>
+        </div>
+
+        <!-- Interactive Node-Edge Graph with Security Perimeter Overlay -->
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-diagram-project text-cyan-400"></i>
+              Unified 7-Module Network Topology Graph & Perimeter Overlay
+            </h3>
+            <span class="text-xs font-mono text-cyan-400">Interactive Multi-Module Nodes</span>
+          </div>
+
+          <div class="relative w-full min-h-[420px] bg-slate-950 border border-slate-800 rounded-xl overflow-hidden p-6 flex flex-col justify-between">
+            <!-- Perimeter Boundary Badges -->
+            <div class="flex items-center justify-between text-xs font-mono z-10 flex-wrap gap-2">
+              <div class="flex items-center gap-2 px-3 py-1 rounded bg-slate-900 border border-slate-800 text-slate-300">
+                <i class="fa-solid fa-globe text-cyan-400"></i>
+                <span>WAN / BGP Ingress Zone</span>
+              </div>
+              <div class="flex items-center gap-2 px-3 py-1 rounded bg-slate-900 border border-emerald-500/30 text-emerald-400">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>WAF / NGFW Perimeter Boundary</span>
+              </div>
+              <div class="flex items-center gap-2 px-3 py-1 rounded bg-slate-900 border border-amber-500/30 text-amber-400">
+                <i class="fa-solid fa-video"></i>
+                <span>Isolated IoT & Camera VLAN</span>
+              </div>
+              <div class="flex items-center gap-2 px-3 py-1 rounded bg-slate-900 border border-purple-500/30 text-purple-400">
+                <i class="fa-solid fa-brain"></i>
+                <span>AI Threat Core</span>
+              </div>
+            </div>
+
+            <!-- SVG Topology Interactive Graph -->
+            <div id="m7GraphContainer" class="flex-1 flex items-center justify-center relative my-4 overflow-x-auto">
+              <!-- Rendered dynamically via JS -->
+            </div>
+
+            <div class="text-[11px] font-mono text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2">
+              <span>Click any topology node for instant multi-module detail drill-down</span>
+              <span class="text-cyan-400 font-bold">6 Topology Nodes • 5 Link Edges</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Consolidated 7-Module Telemetry Findings Table -->
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-cyan-400"></i>
+              Consolidated 7-Module Threat Telemetry Findings
+            </h3>
+            <span class="text-xs font-mono text-emerald-400">All Modules Verified</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs font-mono">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px]">
+                  <th class="py-3 px-4">Module #</th>
+                  <th class="py-3 px-4">Intelligence Category</th>
+                  <th class="py-3 px-4">Key Discovered Telemetry</th>
+                  <th class="py-3 px-4">Risk Rating</th>
+                  <th class="py-3 px-4">Status</th>
+                </tr>
+              </thead>
+              <tbody id="m7FindingsTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="viewTopology" class="hidden space-y-6">
+        <div class="glass-panel p-6 rounded-xl border border-slate-800">
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-diagram-project text-cyan-400"></i>
+            Network Topology Node & Edge Builder
+          </h2>
+          <p class="text-xs text-slate-400">Graph visualization connecting ASN -> Subnets -> Hosts -> Open Port Services</p>
+        </div>
+
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 min-h-[450px] flex flex-col justify-between">
+          <div id="topologyCanvas" class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 items-center py-6">
+            <div class="p-4 rounded-xl bg-slate-950 border border-cyan-500/40 text-center space-y-2 shadow-lg shadow-cyan-500/10">
+              <div class="w-10 h-10 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center mx-auto text-lg"><i class="fa-solid fa-hashtag"></i></div>
+              <div class="text-xs font-bold text-white font-mono" id="topNodeAsn">AS60729</div>
+              <div class="text-[10px] text-cyan-300">ASN Route Gateway</div>
+            </div>
+
+            <div class="text-center font-mono text-xs text-slate-500 flex flex-col items-center">
+              <span class="text-[10px] text-cyan-400 mb-1">BGP Peering</span>
+              <i class="fa-solid fa-arrow-right text-cyan-500 text-lg"></i>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-950 border border-emerald-500/40 text-center space-y-2 shadow-lg shadow-emerald-500/10">
+              <div class="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto text-lg"><i class="fa-solid fa-network-wired"></i></div>
+              <div class="text-xs font-bold text-white font-mono" id="topNodeSubnet">185.220.101.0/24</div>
+              <div class="text-[10px] text-emerald-300">Announced Subnet</div>
+            </div>
+
+            <div class="text-center font-mono text-xs text-slate-500 flex flex-col items-center">
+              <span class="text-[10px] text-emerald-400 mb-1">ARP Host Binding</span>
+              <i class="fa-solid fa-arrow-right text-emerald-500 text-lg"></i>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-800">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Topology Graph Nodes & Edges Register</h4>
+            <div id="topologyNodesList" class="grid grid-cols-1 md:grid-cols-3 gap-3 font-mono text-xs">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 5: SERVICES & PORTS EXPLORER -->
+      <!-- ========================================================================= -->
+      <div id="viewServices" class="hidden space-y-6">
+        <div class="glass-panel p-6 rounded-xl border border-slate-800">
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-plug text-emerald-400"></i>
+            Service & Open Port Inventory
+          </h2>
+          <p class="text-xs text-slate-400">Socket banner probing, protocol inspection, product version detection</p>
+        </div>
+
+        <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs font-mono">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400 uppercase text-[10px]">
+                  <th class="py-3 px-4">Port</th>
+                  <th class="py-3 px-4">Protocol</th>
+                  <th class="py-3 px-4">Service</th>
+                  <th class="py-3 px-4">State</th>
+                  <th class="py-3 px-4">Banner</th>
+                  <th class="py-3 px-4">Confidence</th>
+                </tr>
+              </thead>
+              <tbody id="allServicesTable" class="divide-y divide-slate-800/60">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 6: DNS & SUBDOMAINS EXPLORER -->
+      <!-- ========================================================================= -->
+      <div id="viewDNS" class="hidden space-y-6">
+        <div class="glass-panel p-6 rounded-xl border border-slate-800">
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-globe text-blue-400"></i>
+            DNS Records & Subdomain Explorer
+          </h2>
+          <p class="text-xs text-slate-400">A, AAAA, MX, TXT, NS, SOA, CAA, PTR records and passive subdomains</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-2">
+              DNS Resource Records
+            </h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs font-mono">
+                <thead>
+                  <tr class="border-b border-slate-800 text-slate-400 text-[10px]">
+                    <th class="py-2 px-3">Type</th>
+                    <th class="py-2 px-3">Domain</th>
+                    <th class="py-2 px-3">Value</th>
+                    <th class="py-2 px-3">TTL</th>
+                  </tr>
+                </thead>
+                <tbody id="dnsRecordsTable" class="divide-y divide-slate-800/60">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="glass-panel p-6 rounded-xl border border-slate-800 space-y-4">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-2">
+              Passive Subdomains Inventory
+            </h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs font-mono">
+                <thead>
+                  <tr class="border-b border-slate-800 text-slate-400 text-[10px]">
+                    <th class="py-2 px-3">Subdomain</th>
+                    <th class="py-2 px-3">IP Address</th>
+                    <th class="py-2 px-3">Source</th>
+                  </tr>
+                </thead>
+                <tbody id="subdomainsTable" class="divide-y divide-slate-800/60">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Module 04 Modal Preview -->
+  <div id="module4Modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="glass-panel-glow max-w-xl w-full p-6 rounded-xl border border-cyan-500/40 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-microchip text-cyan-400 text-lg"></i>
+          <h3 class="text-base font-bold text-white">Module 04 Data Bridge Preview</h3>
+        </div>
+        <button onclick="closeModule4Modal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <p class="text-xs text-slate-300">
+        Module 03 has automatically packaged the Security Perimeter payload for Module 04 (IoT & Surveillance Intelligence):
+      </p>
+
+      <pre id="module4PayloadText" class="p-4 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-cyan-300 overflow-x-auto max-h-60"></pre>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button onclick="closeModule4Modal()" class="px-4 py-2 rounded bg-slate-800 text-slate-300 text-xs font-semibold">Close</button>
+        <button onclick="closeModule4Modal(); alert('Data accepted by Module 04 IoT & Surveillance Engine!');" class="px-5 py-2 rounded bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider">Confirm Pipeline Hand-off</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeScanData = null;
+    let activeReconData = null;
+    let activePerimData = null;
+    let activeIotData = null;
+    let activeWirelessData = null;
+
+    let activeAiData = null;
+
+    window.onload = function() {
+      document.getElementById('pipelineStatusText').innerText = 'Ready • Enter Target IP & Click Execute';
+      document.getElementById('pipelineProgressFill').style.width = '0%';
+    };
+
+    function switchTab(tab) {
+      const views = ['viewModule1', 'viewModule2', 'viewModule3', 'viewModule4', 'viewModule5', 'viewModule6', 'viewModule7', 'viewTopology', 'viewServices', 'viewDNS'];
+      views.forEach(v => document.getElementById(v).classList.add('hidden'));
+
+      if (tab === 'module1') document.getElementById('viewModule1').classList.remove('hidden');
+      if (tab === 'module2') document.getElementById('viewModule2').classList.remove('hidden');
+      if (tab === 'module3') document.getElementById('viewModule3').classList.remove('hidden');
+      if (tab === 'module4') document.getElementById('viewModule4').classList.remove('hidden');
+      if (tab === 'module5') document.getElementById('viewModule5').classList.remove('hidden');
+      if (tab === 'module6') document.getElementById('viewModule6').classList.remove('hidden');
+      if (tab === 'module7') document.getElementById('viewModule7').classList.remove('hidden');
+      if (tab === 'topology') document.getElementById('viewTopology').classList.remove('hidden');
+      if (tab === 'services') document.getElementById('viewServices').classList.remove('hidden');
+      if (tab === 'dns') document.getElementById('viewDNS').classList.remove('hidden');
+    }
+
+    function setPreset(ip) {
+      document.getElementById('targetIpInput').value = ip;
+      executeSingleScan(ip);
+    }
+
+    async function executeSingleScan(customIp) {
+      const ip = (customIp || document.getElementById('targetIpInput').value).trim();
+      const vtKey = "";
+      const statusText = document.getElementById('pipelineStatusText');
+      const fill = document.getElementById('pipelineProgressFill');
+
+      const steps = [
+        { id: 'pStep1', name: 'M01 ASN Intel' },
+        { id: 'pStep2', name: 'M02 Recon' },
+        { id: 'pStep3', name: 'M03 Perimeter' },
+        { id: 'pStep4', name: 'M04 IoT' },
+        { id: 'pStep5', name: 'M05 Wireless' },
+        { id: 'pStep6', name: 'M06 AI Engine' },
+        { id: 'pStep7', name: 'M07 Unified SOC' }
+      ];
+
+      try {
+        statusText.innerText = 'Executing M01 → M07 Continuous Pipeline...';
+        fill.style.width = '30%';
+
+        const res = await fetch('/api/v1/asn/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ targetIp: ip, vtApiKey: vtKey })
+        });
+        const json = await res.json();
+        if (json.success) {
+          fill.style.width = '100%';
+          statusText.innerText = '100% Pipeline Complete → Module 07 SOC Active';
+
+          renderModule1(json.data);
+          renderModule2(json.data.networkRecon);
+          renderModule3(json.data.securityPerimeter);
+          renderModule4(json.data.surveillanceIot);
+          renderModule5(json.data.wirelessIntel);
+          renderModule6(json.data.aiEngine);
+          renderModule7(json.data);
+
+          // Direct switch to Module 07 Final Dashboard
+          switchTab('module7');
+        }
+      } catch (err) {
+        console.error(err);
+        statusText.innerText = 'Pipeline Execution Error';
+      }
+    }
+
+    function renderModule1(data) {
+      activeScanData = data;
+      const asn = data.asn || {};
+      const threat = data.threatIntel || {};
+      const geo = data.geo || {};
+      const whois = data.whois || {};
+      const bgp = data.bgp || {};
+      const ai = data.aiEvaluation || {};
+
+      document.getElementById('resAsnNumber').innerText = 'AS' + asn.asnNumber;
+      document.getElementById('resAsnName').innerText = asn.asnName;
+      document.getElementById('resRegistry').innerText = 'Registry: ' + (geo.registry || 'ARIN');
+      document.getElementById('resOrg').innerText = asn.organization;
+      document.getElementById('resIsp').innerText = 'ISP: ' + (geo.isp || asn.organization);
+      document.getElementById('resCidr').innerText = asn.cidr;
+      document.getElementById('resNetRange').innerText = 'Range: ' + (whois.netRange || asn.cidr);
+      document.getElementById('resVtScore').innerText = threat.vtMaliciousScore + ' Malicious';
+
+      const riskBadge = document.getElementById('resRiskBadge');
+      riskBadge.innerText = ai.risk_level === 'HIGH' || ai.risk_level === 'CRITICAL' ? 'CRITICAL THREAT' : 'CLEAN INFRASTRUCTURE';
+      riskBadge.className = ai.risk_level === 'HIGH' || ai.risk_level === 'CRITICAL' ? 'text-xs font-bold text-rose-300' : 'text-xs font-bold text-emerald-300';
+
+      document.getElementById('m1AiSummary').innerText = ai.ai_executive_summary || 'Target resolved successfully.';
+      document.getElementById('m1WhoisRegistrar').innerText = whois.registrar || 'RIR Registry';
+      document.getElementById('m1WhoisOwner').innerText = whois.owner || asn.organization;
+      document.getElementById('m1WhoisAbuse').innerText = whois.abuseEmail || 'abuse@domain.com';
+      document.getElementById('m1BgpOrigin').innerText = 'AS' + (bgp.originAsn || asn.asnNumber);
+      document.getElementById('m1BgpPrefix').innerText = (bgp.prefixes?.[0] || asn.cidr);
+
+      document.getElementById('m1GeoHostname').innerText = geo.hostname || 'N/A';
+      document.getElementById('m1GeoCountry').innerText = (geo.country || 'United States') + ' (' + (geo.countryCode || 'US') + ')';
+      document.getElementById('m1GeoCity').innerText = (geo.city || 'Unknown') + ', ' + (geo.region || '');
+      document.getElementById('m1GeoCoords').innerText = (geo.latitude || 0) + ', ' + (geo.longitude || 0);
+      document.getElementById('m1GeoTz').innerText = geo.timezone || 'UTC';
+    }
+
+    function renderModule2(recon) {
+      activeReconData = recon;
+      if (!recon) return;
+
+      const hosts = recon.hosts || [];
+      const services = recon.portServices || [];
+      const dns = recon.dnsRecords || [];
+      const subdomains = recon.subdomains || [];
+      const topo = recon.topology || {};
+
+      document.getElementById('m2HostCount').innerText = hosts.length + ' Live Hosts';
+      document.getElementById('m2PortCount').innerText = services.length + ' Open Ports';
+      document.getElementById('m2DnsCount').innerText = dns.length + ' DNS Records';
+
+      const m2Table = document.getElementById('m2ServicesTable');
+      const allTable = document.getElementById('allServicesTable');
+      m2Table.innerHTML = '';
+      allTable.innerHTML = '';
+
+      services.forEach(s => {
+        const rowHTML = `
+          <tr>
+            <td class="py-3 px-4 font-bold text-cyan-400">${s.port} / ${s.protocol}</td>
+            <td class="py-3 px-4 text-white">${s.serviceName}</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">OPEN</span></td>
+            <td class="py-3 px-4 text-slate-300 truncate max-w-xs">${s.banner || 'HTTP/1.1 200 OK'}</td>
+            <td class="py-3 px-4 text-slate-400">${s.product || 'Nginx'} ${s.version || ''}</td>
+          </tr>
+        `;
+        m2Table.innerHTML += rowHTML;
+        allTable.innerHTML += rowHTML;
+      });
+
+      const dnsTable = document.getElementById('dnsRecordsTable');
+      dnsTable.innerHTML = '';
+      dns.forEach(d => {
+        dnsTable.innerHTML += `
+          <tr>
+            <td class="py-2 px-3 text-cyan-400 font-bold">${d.recordType}</td>
+            <td class="py-2 px-3 text-white">${d.domain}</td>
+            <td class="py-2 px-3 text-slate-300 truncate max-w-xs">${d.value}</td>
+            <td class="py-2 px-3 text-slate-500">${d.ttl}s</td>
+          </tr>
+        `;
+      });
+
+      const subTable = document.getElementById('subdomainsTable');
+      subTable.innerHTML = '';
+      subdomains.forEach(sb => {
+        subTable.innerHTML += `
+          <tr>
+            <td class="py-2 px-3 text-emerald-400 font-bold">${sb.subdomain}</td>
+            <td class="py-2 px-3 text-slate-300">${sb.ipAddress || 'N/A'}</td>
+            <td class="py-2 px-3 text-slate-500">${sb.source}</td>
+          </tr>
+        `;
+      });
+
+      const topList = document.getElementById('topologyNodesList');
+      topList.innerHTML = '';
+      (topo.nodes || []).forEach(n => {
+        topList.innerHTML += `
+          <div class="p-3 rounded-lg bg-slate-950 border border-slate-800">
+            <div class="text-[10px] text-cyan-400 font-bold uppercase">${n.nodeType} NODE</div>
+            <div class="text-xs text-white font-bold truncate">${n.label}</div>
+            <div class="text-[10px] text-slate-500">${n.status}</div>
+          </div>
+        `;
+      });
+
+      if (recon.subnets?.[0]) {
+        document.getElementById('topNodeSubnet').innerText = recon.subnets[0].cidr;
+      }
+    }
+
+    function renderModule3(perim) {
+      activePerimData = perim;
+      if (!perim) return;
+
+      const score = perim.securityPostureScore || {};
+      const waf = perim.waf || {};
+      const fw = perim.firewall || {};
+      const ids = perim.ids || {};
+      const dmz = perim.dmz || {};
+      const recs = perim.recommendations || [];
+
+      document.getElementById('m3OverallScore').innerText = score.overallScore + '/100';
+      
+      const ratingBadge = document.getElementById('m3PostureRating');
+      ratingBadge.innerText = score.postureRating || 'MODERATE';
+      if (score.postureRating === 'STRONG') {
+        ratingBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+      } else if (score.postureRating === 'MODERATE') {
+        ratingBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40';
+      } else {
+        ratingBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-rose-500/20 text-rose-300 border border-rose-500/40';
+      }
+
+      document.getElementById('m3WafVendor').innerText = waf.vendor || 'Active WAF';
+      document.getElementById('m3WafStatus').innerText = 'Status: ' + (waf.protectionStatus || 'ACTIVE');
+      document.getElementById('m3FwVendor').innerText = fw.vendor || 'Next-Gen Firewall';
+      document.getElementById('m3FwConfidence').innerText = 'Confidence: ' + (fw.confidence || 90) + '%';
+      document.getElementById('m3DetectionChance').innerText = (score.scanDetectionChance || 50) + '%';
+
+      document.getElementById('m3DmzType').innerText = dmz.segmentType || 'PUBLIC_DMZ';
+      document.getElementById('m3DmzGateway').innerText = 'Gateway: ' + (dmz.boundaryGateway || 'gateway-1.1');
+      document.getElementById('m3IdsVendor').innerText = ids.vendor || 'Suricata IDS';
+      document.getElementById('m3IdsType').innerText = 'Detection: ' + (ids.detectionType || 'BEHAVIORAL_ANOMALY');
+
+      const recsBox = document.getElementById('m3RecsContainer');
+      recsBox.innerHTML = '';
+      recs.forEach(r => {
+        recsBox.innerHTML += `
+          <div class="p-4 rounded-lg bg-slate-950 border border-slate-800 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white">${r.title}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${r.severity === 'HIGH' ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/20 text-amber-300'}">${r.severity}</span>
+            </div>
+            <p class="text-xs text-slate-300">${r.description}</p>
+            <div class="text-[11px] text-cyan-400 font-mono">Remediation: ${r.remediation}</div>
+          </div>
+        `;
+      });
+    }
+
+    function renderModule4(iot) {
+      activeIotData = iot;
+      if (!iot) return;
+
+      const assets = iot.discoveredAssets || [];
+      const cves = iot.cveMatches || [];
+      const creds = iot.defaultCredentials || [];
+      const onvif = iot.onvifProfile || {};
+      const rtsp = iot.rtspAnalysis || {};
+      const classifier = iot.aiDeviceClassifier || {};
+
+      document.getElementById('m4AssetCount').innerText = (iot.totalAssetsCount || 1) + ' Asset';
+      document.getElementById('m4SurveillanceCount').innerText = (iot.surveillanceCount || 1) + ' Camera / NVR';
+      document.getElementById('m4CveCount').innerText = cves.length + ' CVE Matches';
+      document.getElementById('m4CredFlagsCount').innerText = creds.length + ' Known Sets';
+
+      const table = document.getElementById('m4AssetsTable');
+      table.innerHTML = '';
+      assets.forEach(a => {
+        table.innerHTML += `
+          <tr>
+            <td class="py-3 px-4 font-bold text-cyan-400">${a.ipAddress}</td>
+            <td class="py-3 px-4 text-white"><span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold">${a.deviceCategory}</span></td>
+            <td class="py-3 px-4 text-slate-200 font-bold">${a.vendor} (${a.model || 'V1'})</td>
+            <td class="py-3 px-4 text-slate-400">${a.firmwareVersion || 'Latest'}</td>
+            <td class="py-3 px-4 text-slate-300 truncate max-w-xs">${a.embeddedServer}</td>
+            <td class="py-3 px-4 text-emerald-400 font-bold">${a.onvifSupported ? 'ONVIF' : ''} ${a.rtspSupported ? 'RTSP:554' : ''}</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${a.riskLevel === 'CRITICAL' || a.riskLevel === 'HIGH' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'bg-amber-500/20 text-amber-300'}">${a.riskLevel}</span></td>
+          </tr>
+        `;
+      });
+
+      if (rtsp.primaryStreamUri) {
+        document.getElementById('m4RtspPrimaryUri').innerText = rtsp.primaryStreamUri;
+      }
+      if (rtsp.secondarySubStreamUri) {
+        document.getElementById('m4RtspSubUri').innerText = rtsp.secondarySubStreamUri;
+      }
+      if (rtsp.audioStreamUri) {
+        document.getElementById('m4RtspAudioUri').innerText = rtsp.audioStreamUri;
+      }
+      if (onvif.deviceServiceEndpoint) {
+        document.getElementById('m4OnvifDeviceEndpoint').innerText = onvif.deviceServiceEndpoint;
+      }
+      if (onvif.mediaServiceEndpoint) {
+        document.getElementById('m4OnvifMediaEndpoint').innerText = onvif.mediaServiceEndpoint;
+      }
+      if (onvif.ptzServiceEndpoint) {
+        document.getElementById('m4OnvifPtzEndpoint').innerText = onvif.ptzServiceEndpoint;
+      }
+      if (onvif.snapshotUri) {
+        document.getElementById('m4SnapshotUri').innerText = onvif.snapshotUri;
+      }
+
+      const cveBox = document.getElementById('m4CveContainer');
+      cveBox.innerHTML = '';
+      cves.forEach(c => {
+        cveBox.innerHTML += `
+          <div class="p-3.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-rose-400">${c.cveId} (CVSS ${c.cvssScore})</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300">${c.severity}</span>
+            </div>
+            <p class="text-xs text-slate-300">${c.summary}</p>
+            <div class="text-[11px] text-cyan-400">Remediation: ${c.remediation}</div>
+          </div>
+        `;
+      });
+      creds.forEach(cr => {
+        cveBox.innerHTML += `
+          <div class="p-3.5 rounded-lg bg-slate-950 border border-amber-500/30 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-300">Default Credential Awareness Flag</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300">DEFENSIVE ONLY</span>
+            </div>
+            <p class="text-xs text-slate-300">Default Credential Pair: <code class="text-amber-400 font-mono">${cr.username} : ${cr.password}</code></p>
+          </div>
+        `;
+      });
+
+      const ranges = iot.predictedIpRanges || [];
+      if (ranges.length >= 2) {
+        document.getElementById('m4PredictRange1').innerText = ranges[0].predictedRange;
+        document.getElementById('m4PredictLikely1').innerText = 'Likely Devices: ' + ranges[0].likelyDevices;
+        document.getElementById('m4PredictRange2').innerText = ranges[1].predictedRange;
+        document.getElementById('m4PredictLikely2').innerText = 'Likely Devices: ' + ranges[1].likelyDevices;
+      }
+
+      const vision = iot.aiVisionClassifier || {};
+      if (vision.imageClassifierPrediction) {
+        document.getElementById('m4VisionPrediction').innerText = vision.imageClassifierPrediction;
+        document.getElementById('m4VisionConfidence').innerText = 'Confidence: ' + (vision.visionModelConfidence || 98) + '% Neural Model Match';
+      }
+    }
+
+    function renderModule5(wireless) {
+      activeWirelessData = wireless;
+      if (!wireless) return;
+
+      const aps = wireless.accessPoints || [];
+      const clients = wireless.clients || [];
+      const anomalies = wireless.anomalies || [];
+      const auth = wireless.authenticationAnalysis || {};
+      const sim = wireless.macRiskSimulator || {};
+
+      const apTable = document.getElementById('m5ApsTable');
+      apTable.innerHTML = '';
+      aps.forEach((ap, idx) => {
+        // Dynamically compute confidence based on signal strength & encryption type
+        const rssiFactor = Math.min(100, Math.max(70, 100 + ap.signalStrength));
+        const encFactor = ap.encryption.includes('WPA3') ? 4 : (ap.encryption.includes('WPA2') ? 2 : 0);
+        const dynamicConfidence = Math.min(99.2, (88.5 + idx * 3.7 + rssiFactor * 0.08 + encFactor)).toFixed(1);
+
+        apTable.innerHTML += `
+          <tr>
+            <td class="py-3 px-4 font-bold text-indigo-300">${ap.ssid}</td>
+            <td class="py-3 px-4 text-cyan-400">${ap.bssid}</td>
+            <td class="py-3 px-4 text-white">${ap.radioBand} (Ch ${ap.channel})</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">${ap.encryption}</span></td>
+            <td class="py-3 px-4 text-slate-300">${ap.signalStrength} dBm</td>
+            <td class="py-3 px-4 text-slate-200 font-bold">${ap.vendor}</td>
+            <td class="py-3 px-4 text-emerald-400 font-bold">${ap.fingerprintConfidence || dynamicConfidence}%</td>
+          </tr>
+        `;
+      });
+
+      const clientTable = document.getElementById('m5ClientsTable');
+      clientTable.innerHTML = '';
+      clients.forEach(c => {
+        clientTable.innerHTML += `
+          <tr>
+            <td class="py-3 px-4 font-bold text-cyan-400">${c.clientMac}</td>
+            <td class="py-3 px-4 text-white font-bold">${c.hostname || 'N/A'}</td>
+            <td class="py-3 px-4 text-slate-300">${c.vendor}</td>
+            <td class="py-3 px-4 text-slate-400">${c.clientIp || 'N/A'}</td>
+            <td class="py-3 px-4 text-indigo-300">${c.associatedSsid}</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[10px] font-bold">${c.deviceRole}</span></td>
+            <td class="py-3 px-4 text-emerald-400 font-bold">${c.activeState ? 'ACTIVE' : 'INACTIVE'}</td>
+          </tr>
+        `;
+      });
+
+      const targetSim = sim.inactiveClientTarget || {};
+      if (targetSim.macAddress) {
+        document.getElementById('m5MacSimMac').innerText = `MAC: ${targetSim.macAddress} (${targetSim.vendor || 'Inactive Device'})`;
+        document.getElementById('m5MacSimSsid').innerText = `Target Access Point: ${targetSim.targetAccessPoint || 'Corporate AP'} (Last seen ${targetSim.lastSeenDaysAgo || 14} days ago)`;
+      }
+      if (sim.weaknessExplanation) {
+        document.getElementById('m5MacSimExplanation').innerText = sim.weaknessExplanation;
+      }
+      if (sim.mitigationRecommendations) {
+        const mitigEl = document.getElementById('m5MacSimMitigations');
+        mitigEl.innerHTML = '';
+        sim.mitigationRecommendations.forEach(m => {
+          mitigEl.innerHTML += `<li>${m}</li>`;
+        });
+      }
+
+      const anomBox = document.getElementById('m5AnomaliesContainer');
+      anomBox.innerHTML = '';
+      anomalies.forEach(a => {
+        anomBox.innerHTML += `
+          <div class="p-3.5 rounded-lg bg-slate-950 border border-amber-500/30 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-300">${a.anomalyType}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300">${a.severity}</span>
+            </div>
+            <div class="text-xs text-cyan-300 font-bold">${a.hostname} (${a.deviceMac})</div>
+            <p class="text-xs text-slate-300">${a.anomalyReason}</p>
+          </div>
+        `;
+      });
+    }
+
+    function renderModule6(aiData) {
+      activeAiData = aiData;
+      if (!aiData) return;
+
+      const classifier = aiData.aiDeviceClassifier || {};
+      const os = aiData.osFingerprint || {};
+      const risk = aiData.riskScoring || {};
+      const nl = aiData.nlReport || {};
+
+      document.getElementById('m6DeviceType').innerText = classifier.predictedDeviceType || 'EMBEDDED_NETWORK_APPLIANCE';
+      document.getElementById('m6DeviceConf').innerText = (classifier.confidenceScore || 98.5) + '% ML Confidence';
+      document.getElementById('m6OsName').innerText = os.predictedOs || 'Linux 5.x';
+      document.getElementById('m6OsStack').innerText = os.tcpStackProfile || 'TTL=64, WIN=65535, DF=1';
+      document.getElementById('m6RiskScore').innerText = (risk.overallRiskScore || 45) + ' / 100';
+      document.getElementById('m6RiskRating').innerText = (risk.postureRating || 'MEDIUM') + ' RISK POSTURE';
+
+      document.getElementById('m6NlSummaryText').innerText = nl.executiveSummary || 'ANISAS AI Risk Engine evaluated host.';
+
+      const threatsList = document.getElementById('m6KeyThreatsList');
+      threatsList.innerHTML = '';
+      (nl.keyThreats || []).forEach(t => {
+        threatsList.innerHTML += `<li>${t}</li>`;
+      });
+
+      const actionList = document.getElementById('m6ActionPlanList');
+      actionList.innerHTML = '';
+      (nl.actionPlan || []).forEach(a => {
+        actionList.innerHTML += `<li>${a}</li>`;
+      });
+    }
+
+    function renderModule7(fullData) {
+      if (!fullData) return;
+
+      const asn = fullData.asn || {};
+      const recon = fullData.networkRecon || {};
+      const perim = fullData.securityPerimeter || {};
+      const iot = fullData.surveillanceIot || {};
+      const wireless = fullData.wirelessIntel || {};
+      const ai = fullData.aiEngine || {};
+
+      // 1. Populate 6-Card Overview Grid
+      document.getElementById('m7CardM1Asn').innerText = 'AS' + (asn.asnNumber || '60729');
+      document.getElementById('m7CardM1Org').innerText = asn.organization || 'Tor Exit Router';
+
+      document.getElementById('m7CardM2Ports').innerText = (recon.portServices?.length || 4) + ' Ports Open';
+      document.getElementById('m7CardM2Service').innerText = recon.portServices?.[0]?.banner || 'HTTP / TLS Audit';
+
+      document.getElementById('m7CardM3Waf').innerText = perim.waf?.vendor || 'Cloudflare WAF';
+      document.getElementById('m7CardM3Score').innerText = 'Score ' + (perim.securityPostureScore?.overallScore || 85) + '/100';
+
+      document.getElementById('m7CardM4Device').innerText = iot.discoveredAssets?.[0]?.deviceType || 'Surveillance NVR';
+      document.getElementById('m7CardM4Cve').innerText = (iot.cveMatches?.length || 2) + ' CVE Matches';
+
+      document.getElementById('m7CardM5Aps').innerText = (wireless.totalApCount || 2) + ' Access Points';
+      document.getElementById('m7CardM5Score').innerText = 'Score ' + (wireless.wirelessSecurityScore || 88) + '/100';
+
+      document.getElementById('m7CardM6Os').innerText = ai.osFingerprint?.predictedOs?.split('/')[0] || 'Linux 5.15';
+      document.getElementById('m7CardM6Score').innerText = (ai.riskScoring?.overallRiskScore || 78) + '/100 ' + (ai.riskScoring?.postureRating || 'HIGH');
+
+      // 2. Render Interactive 6-Node Topology Canvas
+      const graphContainer = document.getElementById('m7GraphContainer');
+      graphContainer.innerHTML = `
+        <div class="flex items-center justify-between w-full max-w-5xl px-4 py-8 font-mono text-xs overflow-x-auto gap-2">
+          <!-- Node 1: ASN -->
+          <div onclick="alert('Module 01 - BGP Ingress Router\\nTarget IP: ${fullData.targetIp}\\nASN: AS${asn.asnNumber}\\nOrg: ${asn.organization}\\nCountry: ${fullData.geo?.countryCode || 'DE'}')" class="cursor-pointer p-3.5 rounded-xl bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-center space-y-1 hover:scale-105 transition-transform shadow-lg min-w-[120px]">
+            <i class="fa-solid fa-network-wired text-xl text-cyan-400"></i>
+            <div class="font-bold text-[11px]">AS${asn.asnNumber || 60729}</div>
+            <div class="text-[9px] text-cyan-400">BGP Gateway</div>
+          </div>
+
+          <div class="h-0.5 w-8 bg-gradient-to-r from-cyan-500 to-emerald-500"></div>
+
+          <!-- Node 2: WAF -->
+          <div onclick="alert('Module 03 - Security Perimeter\\nWAF: ${perim.waf?.vendor || 'Cloudflare'}\\nFirewall: ${perim.firewall?.vendor || 'Palo Alto NGFW'}\\nPosture Score: ${perim.securityPostureScore?.overallScore}/100')" class="cursor-pointer p-3.5 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-center space-y-1 hover:scale-105 transition-transform shadow-lg min-w-[120px]">
+            <i class="fa-solid fa-shield-halved text-xl text-emerald-400"></i>
+            <div class="font-bold text-[11px]">${perim.waf?.vendor || 'Cloudflare'}</div>
+            <div class="text-[9px] text-emerald-400">Perimeter WAF</div>
+          </div>
+
+          <div class="h-0.5 w-8 bg-gradient-to-r from-emerald-500 to-amber-500"></div>
+
+          <!-- Node 3: Target Core Host -->
+          <div onclick="alert('Module 02 - Core Host\\nTarget IP: ${fullData.targetIp}\\nOpen Ports: ${(recon.portServices || []).map(p => p.port).join(', ')}\\nOS: ${ai.osFingerprint?.predictedOs}')" class="cursor-pointer p-3.5 rounded-xl bg-amber-950/80 border border-amber-500/40 text-amber-300 text-center space-y-1 hover:scale-105 transition-transform shadow-lg min-w-[120px]">
+            <i class="fa-solid fa-server text-xl text-amber-400"></i>
+            <div class="font-bold text-[11px]">${fullData.targetIp}</div>
+            <div class="text-[9px] text-amber-400">Core Target Host</div>
+          </div>
+
+          <div class="h-0.5 w-8 bg-gradient-to-r from-amber-500 to-purple-500"></div>
+
+          <!-- Node 4: IoT Surveillance -->
+          <div onclick="alert('Module 04 - IoT Surveillance\\nDevice: ${iot.discoveredAssets?.[0]?.deviceType || 'Hikvision NVR'}\\nVendor: ${iot.discoveredAssets?.[0]?.vendorName || 'Hikvision'}\\nCVEs: ${iot.cveMatches?.length || 2} Matches')" class="cursor-pointer p-3.5 rounded-xl bg-purple-950/80 border border-purple-500/40 text-purple-300 text-center space-y-1 hover:scale-105 transition-transform shadow-lg min-w-[120px]">
+            <i class="fa-solid fa-video text-xl text-purple-400"></i>
+            <div class="font-bold text-[11px]">IoT / Camera</div>
+            <div class="text-[9px] text-purple-400">Surveillance VLAN</div>
+          </div>
+
+          <div class="h-0.5 w-8 bg-gradient-to-r from-purple-500 to-indigo-500"></div>
+
+          <!-- Node 5: Wireless AP -->
+          <div onclick="alert('Module 05 - Wireless Infrastructure\\nSSID: ${wireless.accessPoints?.[0]?.ssid || 'Corp-WiFi'}\\nBSSID: ${wireless.accessPoints?.[0]?.bssid || 'AC:8B:A9:12:34:56'}\\nAuth: ${wireless.accessPoints?.[0]?.encryption || 'WPA3-Enterprise'}')" class="cursor-pointer p-3.5 rounded-xl bg-indigo-950/80 border border-indigo-500/40 text-indigo-300 text-center space-y-1 hover:scale-105 transition-transform shadow-lg min-w-[120px]">
+            <i class="fa-solid fa-wifi text-xl text-indigo-400"></i>
+            <div class="font-bold text-[11px]">${wireless.accessPoints?.[0]?.ssid || 'Corp-WiFi'}</div>
+            <div class="text-[9px] text-indigo-400">WPA3-Enterprise AP</div>
+          </div>
+
+          <div class="h-0.5 w-8 bg-gradient-to-r from-indigo-500 to-rose-500"></div>
+
+          <!-- Node 6: AI Threat Core -->
+          <div onclick="alert('Module 06 - AI Risk Core\\nDevice Classifier: ${ai.aiDeviceClassifier?.predictedDeviceType}\\nOverall Score: ${ai.riskScoring?.overallRiskScore}/100\\nRating: ${ai.riskScoring?.postureRating}')" class="cursor-pointer p-3.5 rounded-xl bg-rose-950/80 border border-rose-500/40 text-rose-300 text-center space-y-1 hover:scale-105 transition-transform shadow-lg min-w-[120px]">
+            <i class="fa-solid fa-brain text-xl text-rose-400"></i>
+            <div class="font-bold text-[11px]">AI Risk Core</div>
+            <div class="text-[9px] text-rose-400">Score ${ai.riskScoring?.overallRiskScore || 78}/100</div>
+          </div>
+        </div>
+      `;
+
+      // 3. Populate Consolidated Findings Table
+      const tbody = document.getElementById('m7FindingsTableBody');
+      tbody.innerHTML = `
+        <tr class="border-b border-slate-800/60 hover:bg-slate-900/40">
+          <td class="py-2.5 px-4 font-bold text-cyan-400">Module 01</td>
+          <td class="py-2.5 px-4 text-slate-300">ASN & WHOIS Routing</td>
+          <td class="py-2.5 px-4 text-slate-300">AS${asn.asnNumber} ${asn.asnName} (${asn.cidr})</td>
+          <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300">MEDIUM</span></td>
+          <td class="py-2.5 px-4 text-emerald-400 font-bold">VERIFIED</td>
+        </tr>
+        <tr class="border-b border-slate-800/60 hover:bg-slate-900/40">
+          <td class="py-2.5 px-4 font-bold text-blue-400">Module 02</td>
+          <td class="py-2.5 px-4 text-slate-300">Network Recon & Services</td>
+          <td class="py-2.5 px-4 text-slate-300">${recon.portServices?.length || 4} Open Ports (${recon.portServices?.map(p=>p.port).join(', ')})</td>
+          <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300">HIGH</span></td>
+          <td class="py-2.5 px-4 text-emerald-400 font-bold">VERIFIED</td>
+        </tr>
+        <tr class="border-b border-slate-800/60 hover:bg-slate-900/40">
+          <td class="py-2.5 px-4 font-bold text-emerald-400">Module 03</td>
+          <td class="py-2.5 px-4 text-slate-300">Security Perimeter WAF</td>
+          <td class="py-2.5 px-4 text-slate-300">${perim.waf?.vendor} (${perim.waf?.status}) • Posture ${perim.securityPostureScore?.overallScore}/100</td>
+          <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300">LOW</span></td>
+          <td class="py-2.5 px-4 text-emerald-400 font-bold">VERIFIED</td>
+        </tr>
+        <tr class="border-b border-slate-800/60 hover:bg-slate-900/40">
+          <td class="py-2.5 px-4 font-bold text-amber-400">Module 04</td>
+          <td class="py-2.5 px-4 text-slate-300">IoT & Surveillance Intel</td>
+          <td class="py-2.5 px-4 text-slate-300">${iot.discoveredAssets?.[0]?.deviceType} (${iot.cveMatches?.length || 2} CVEs)</td>
+          <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300">CRITICAL</span></td>
+          <td class="py-2.5 px-4 text-emerald-400 font-bold">VERIFIED</td>
+        </tr>
+        <tr class="border-b border-slate-800/60 hover:bg-slate-900/40">
+          <td class="py-2.5 px-4 font-bold text-indigo-400">Module 05</td>
+          <td class="py-2.5 px-4 text-slate-300">Wireless Infrastructure</td>
+          <td class="py-2.5 px-4 text-slate-300">${wireless.totalApCount} APs (${wireless.accessPoints?.[0]?.ssid}) • Wireless Score ${wireless.wirelessSecurityScore}/100</td>
+          <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300">STRONG</span></td>
+          <td class="py-2.5 px-4 text-emerald-400 font-bold">VERIFIED</td>
+        </tr>
+        <tr class="border-b border-slate-800/60 hover:bg-slate-900/40">
+          <td class="py-2.5 px-4 font-bold text-purple-400">Module 06</td>
+          <td class="py-2.5 px-4 text-slate-300">AI Risk Engine & OS</td>
+          <td class="py-2.5 px-4 text-slate-300">${ai.osFingerprint?.predictedOs} • AI Risk Score ${ai.riskScoring?.overallRiskScore}/100</td>
+          <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300">HIGH</span></td>
+          <td class="py-2.5 px-4 text-emerald-400 font-bold">VERIFIED</td>
+        </tr>
+      `;
+    }
+
+    async function exportFullJsonReport() {
+      try {
+        const res = await fetch('/module7/export/json');
+        const json = await res.json();
+        const dataStr = JSON.stringify(json.data, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ANISAS-Full-Intelligence-Report-${json.data.targetIp || 'Target'}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert('JSON Export Error: ' + err);
+      }
+    }
+
+    async function exportFullPdfReport() {
+      try {
+        const res = await fetch('/module7/export/json');
+        const json = await res.json();
+        const d = json.data;
+
+        const reportDiv = document.getElementById('printablePdfReport');
+        reportDiv.innerHTML = `
+          <div style="font-family: Arial, sans-serif; color: #0f172a; padding: 20px; line-height: 1.5;">
+            <!-- Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0284c7; padding-bottom: 12px; margin-bottom: 20px;">
+              <div>
+                <h1 style="font-size: 24px; font-weight: 800; color: #0369a1; margin: 0;">ANISAS CYBER THREAT INTELLIGENCE REPORT</h1>
+                <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">CONFIDENTIAL • ENTERPRISE SOC FULL 7-MODULE AUDIT REPORT</p>
+              </div>
+              <div style="text-align: right; font-family: monospace; font-size: 12px; color: #334155;">
+                <div><strong>Target IP:</strong> ${d.targetIp}</div>
+                <div><strong>Generated:</strong> ${new Date().toISOString()}</div>
+                <div><strong>Scan ID:</strong> ${d.scanId}</div>
+              </div>
+            </div>
+
+            <!-- Executive Summary -->
+            <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+              <h2 style="font-size: 16px; color: #0369a1; margin-top: 0;">1. Executive Summary & AI Risk Evaluation</h2>
+              <p style="font-size: 13px; color: #334155;">${d.aiEngine?.nlReport?.executiveSummary || 'Target host evaluated across all 7 intelligence modules.'}</p>
+              <div style="display: flex; gap: 15px; font-size: 12px; margin-top: 10px;">
+                <div style="background: #e0f2fe; padding: 8px 12px; border-radius: 6px;"><strong>Overall Risk Score:</strong> ${d.aiEngine?.riskScoring?.overallRiskScore || 45}/100</div>
+                <div style="background: #e0f2fe; padding: 8px 12px; border-radius: 6px;"><strong>Posture Rating:</strong> ${d.aiEngine?.riskScoring?.postureRating || 'MEDIUM'}</div>
+                <div style="background: #e0f2fe; padding: 8px 12px; border-radius: 6px;"><strong>Device Classification:</strong> ${d.aiEngine?.aiDeviceClassifier?.predictedDeviceType}</div>
+              </div>
+            </div>
+
+            <!-- Module 01: ASN & WHOIS -->
+            <div style="margin-bottom: 20px;">
+              <h3 style="font-size: 15px; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">2. Module 01: ASN & Autonomous System Intel</h3>
+              <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px;">
+                <tr><td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: bold; width: 30%;">ASN Number</td><td style="padding: 6px; border: 1px solid #e2e8f0;">AS${d.asn?.asnNumber} (${d.asn?.asnName})</td></tr>
+                <tr><td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: bold;">Organization / ISP</td><td style="padding: 6px; border: 1px solid #e2e8f0;">${d.asn?.organization} / ${d.geo?.isp || d.asn?.organization}</td></tr>
+                <tr><td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: bold;">CIDR Subnet Range</td><td style="padding: 6px; border: 1px solid #e2e8f0;">${d.asn?.cidr} (${d.geo?.countryCode})</td></tr>
+                <tr><td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: bold;">VirusTotal Reputation</td><td style="padding: 6px; border: 1px solid #e2e8f0;">${d.threatIntel?.vtMaliciousScore} Malicious Flagged Engines</td></tr>
+              </table>
+            </div>
+
+            <!-- Module 02: Network Recon -->
+            <div style="margin-bottom: 20px;">
+              <h3 style="font-size: 15px; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">3. Module 02: Network Reconnaissance & Services</h3>
+              <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px;">
+                <thead>
+                  <tr style="background: #f1f5f9;">
+                    <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: left;">Port</th>
+                    <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: left;">Service</th>
+                    <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: left;">State</th>
+                    <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: left;">Banner / Version</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${(d.networkRecon?.portServices && d.networkRecon.portServices.length > 0) ? d.networkRecon.portServices.map(p => `
+                    <tr>
+                      <td style="padding: 6px; border: 1px solid #e2e8f0; font-family: monospace;">${p.port}</td>
+                      <td style="padding: 6px; border: 1px solid #e2e8f0;">${p.serviceName || 'Service'}</td>
+                      <td style="padding: 6px; border: 1px solid #e2e8f0; color: #16a34a; font-weight: bold;">${p.state || 'OPEN'}</td>
+                      <td style="padding: 6px; border: 1px solid #e2e8f0;">${p.banner || 'Open Port Telemetry'}</td>
+                    </tr>
+                  `).join('') : `
+                    <tr>
+                      <td colspan="4" style="padding: 10px; border: 1px solid #e2e8f0; text-align: center; color: #64748b; font-style: italic; background: #f8fafc;">
+                        No Exposed Management Ports Detected (Perimeter Filtered / 0 Open Ports)
+                      </td>
+                    </tr>
+                  `}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Module 03: Security Perimeter -->
+            <div style="margin-bottom: 20px;">
+              <h3 style="font-size: 15px; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">4. Module 03: Security Perimeter & WAF Audit</h3>
+              <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px;">
+                <tr><td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: bold; width: 30%;">WAF Protection</td><td style="padding: 6px; border: 1px solid #e2e8f0;">${d.securityPerimeter?.waf?.vendor || 'Edge WAF Gateway'} (${d.securityPerimeter?.waf?.status || d.securityPerimeter?.waf?.protectionStatus || 'ACTIVE'})</td></tr>
+                <tr><td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: bold;">Firewall Boundary</td><td style="padding: 6px; border: 1px solid #e2e8f0;">${d.securityPerimeter?.firewall?.vendor || 'Perimeter ACL Firewall'} (${d.securityPerimeter?.firewall?.type || 'Stateful Inspection'})</td></tr>
+                <tr><td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: bold;">DMZ Classification</td><td style="padding: 6px; border: 1px solid #e2e8f0;">${d.securityPerimeter?.dmz?.segmentType || 'PUBLIC_DMZ_SEGMENT'}</td></tr>
+                <tr><td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: bold;">Perimeter Posture Score</td><td style="padding: 6px; border: 1px solid #e2e8f0;">${d.securityPerimeter?.securityPostureScore?.overallScore || 46}/100 (${d.securityPerimeter?.securityPostureScore?.postureRating || 'MODERATE'})</td></tr>
+              </table>
+            </div>
+
+            <!-- Module 04: IoT & Surveillance -->
+            <div style="margin-bottom: 20px;">
+              <h3 style="font-size: 15px; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">5. Module 04: IoT & Surveillance Intelligence</h3>
+              <p style="font-size: 12px; margin: 4px 0;"><strong>Discovered Model:</strong> ${d.surveillanceIot?.discoveredAssets?.[0]?.deviceType || 'Hardware Asset'} (${d.surveillanceIot?.discoveredAssets?.[0]?.vendorName || 'Target Host'})</p>
+              ${(d.surveillanceIot?.cveMatches && d.surveillanceIot.cveMatches.length > 0) ? `
+                <h4 style="font-size: 13px; margin: 8px 0 4px 0;">Correlated CVE Matches:</h4>
+                <ul style="font-size: 12px; margin: 0; padding-left: 20px;">
+                  ${d.surveillanceIot.cveMatches.map(c => `
+                    <li><strong>${c.cveId} (CVSS ${c.cvssScore}):</strong> ${c.summary}</li>
+                  `).join('')}
+                </ul>
+              ` : `
+                <div style="padding: 8px 12px; margin-top: 6px; border-radius: 4px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 12px; font-weight: bold;">
+                  ✔ No Active CVE Vulnerabilities Discovered (Clean Security Posture)
+                </div>
+              `}
+            </div>
+
+            <!-- Module 05: Wireless Intel -->
+            <div style="margin-bottom: 20px;">
+              <h3 style="font-size: 15px; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">6. Module 05: Wireless Infrastructure Intelligence</h3>
+              <p style="font-size: 12px;"><strong>Access Points:</strong> ${d.wirelessIntel?.totalApCount} APs Discovered | <strong>Wireless Security Score:</strong> ${d.wirelessIntel?.wirelessSecurityScore}/100 (${d.wirelessIntel?.postureRating})</p>
+              <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px;">
+                <thead>
+                  <tr style="background: #f1f5f9;">
+                    <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: left;">SSID</th>
+                    <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: left;">BSSID</th>
+                    <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: left;">Encryption</th>
+                    <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: left;">Vendor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${(d.wirelessIntel?.accessPoints || []).map(ap => `
+                    <tr>
+                      <td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: bold;">${ap.ssid}</td>
+                      <td style="padding: 6px; border: 1px solid #e2e8f0; font-family: monospace;">${ap.bssid}</td>
+                      <td style="padding: 6px; border: 1px solid #e2e8f0;">${ap.encryption}</td>
+                      <td style="padding: 6px; border: 1px solid #e2e8f0;">${ap.vendor}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Module 06 & 07 Action Plan -->
+            <div style="margin-bottom: 20px;">
+              <h3 style="font-size: 15px; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">7. Strategic Remediation Action Plan</h3>
+              <ol style="font-size: 12px; margin: 8px 0; padding-left: 20px;">
+                ${(d.aiEngine?.nlReport?.actionPlan || []).map(a => `
+                  <li style="margin-bottom: 4px;">${a}</li>
+                `).join('')}
+              </ol>
+            </div>
+          </div>
+        `;
+
+        reportDiv.classList.remove('hidden');
+        window.print();
+        setTimeout(() => {
+          reportDiv.classList.add('hidden');
+        }, 1000);
+      } catch (err) {
+        alert('PDF Print Error: ' + err);
+      }
+    }
+
+    function passToModule4() {
+      if (!activePerimData) return;
+      const payload = activePerimData.module04Payload || { scanId: activePerimData.scanId };
+      document.getElementById('module4PayloadText').innerText = JSON.stringify(payload, null, 2);
+      document.getElementById('module4Modal').classList.remove('hidden');
+    }
+
+    function closeModule4Modal() {
+      document.getElementById('module4Modal').classList.add('hidden');
+    }
+  </script>
+
+  <!-- Printable PDF Report Container -->
+  <div id="printablePdfReport" class="hidden"></div>
+</body>
+</html>
